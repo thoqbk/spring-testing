@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * @SpringJUnitConfig includes 2 meta annotations: @ExtendWith(SpringExtension.class) and @ContextConfiguration
  *
  * We can configure test class with @SpringJUnitConfig in 2 ways:
- * 1. Pass in the root configuration for application-context @SpringJUnitConfig(SystemTestConfig.class). This is equivalent to
+ * 1. Pass in the primary configuration for application-context @SpringJUnitConfig(SystemTestConfig.class). This is equivalent to
  * @ExtendWith(SpringExtension.class)
  * @ContextConfiguration(classes={SystemTestConfig.class})
  *
