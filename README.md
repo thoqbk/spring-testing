@@ -2,15 +2,13 @@
 
 ## Introduction
 
-There's heavily use of annotation in Spring framework. This makes us a bit confuse what annotations should be used especially in tests. It sometimes ends up with adding not needed annotations or making the tests not work but we don't really understand why.
+There's heavily use of annotation in Spring framework. This makes us a bit confuse what annotations should be used especially in tests. It sometimes ends up with adding not needed annotations or making the tests not work but we don't really understand why. You can easily find the developers make mistakes with Spring annotations like [this][4] or someone who makes things work but don't fully understand why.
 
 In this article, I will summarize what annotations we should use in each testing senario and how they work under the hood.
 
 ## Spring framework and spring boot
 
-If you're new to Spring, you should first know what is Spring framework and what is Spring boot.
-
-### Spring framework
+Before we look into Spring test, we need to know how Spring works and the relationship between Spring framework and Spring boot.
 
 Spring is the most popular application framework of Java. It simplifies the Java EE development by providing dependency injection feature and supports of many popular technologies such as Spring JDBC, Spring MVC, Spring Test.
 
@@ -63,7 +61,7 @@ public class MainApplication {
 }
 ```
 
-Looking into [SpringBootApplication][1] annotation you can see that there is a meta annotation @SpringBootConfiguration which again includes @Configuration. That explains why Spring can still find the primary configuration class and load HelloService bean with `@SpringBootApplication`. Let me make some points about Spring:
+Looking into [SpringBootApplication][1] annotation you can see that there is a meta annotation @SpringBootConfiguration which again includes @Configuration. That explains why Spring can still find the primary configuration class and load HelloService bean with `@SpringBootApplication`. So far I would want to say that:
 - Spring tends to group multiple annotations into one to make things simpler
 - But this grouping also generates many new annotations which sometimes makes confuse and adding redandunt annotations (e.g. adding both SpringBootApplication and Configuration to the same class)
 
@@ -73,144 +71,90 @@ Visit following links in case you want to learn more about Spring framework and 
 
 Overall, we need to have 1 primary configuration to create an ApplicationContext for any Spring application.
 
-### Testing in Spring Framework
+## Testing in Spring framework
+
+Following is the most basic setup to write a test in Spring:
 
 ```java
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes={SystemTestConfig.class})
-public class TransferServiceTest {
+@ContextConfiguration(classes={TestConfig.class})
+public class TodoServiceTest {
+    @Autowired
+    private TodoService todoService;
     // ...
 }
 ```
 
-Or shorter:
+With this code, a Spring ApplicationContext will be created using TestConfig as the primary configuration. It then gets TodoService instance from the container and inject into the test class. This matches with what we discussed so far: Spring application needs to create ApplicationContext using 1 primary configuration.
+
+There's a short form for the setup above which if you look inside the @SpringJUnitConfig you can see it includes 2 meta annotations: @ExtendWith and @ContextConfiguration
+
 ```java
-@SpringJUnitConfig(SystemTestConfig.class)
-public class TransferServiceTest {
+@SpringJUnitConfig(TestConfig.class)
+public class TodoServiceTest {
     // ...
 }
 ```
 
-If the config class is not spepcified, Spring will look for configuration embedded in test class
+If the configuration class is not spepcified, Spring will look for configuration embedded in test class
+
 ```java
 @SpringJUnitConfig
-public class TransferServiceTest {
+public class TodoServiceTest {
     @Configuration
-    @Import(SystemTestConfig.class)
-    static class TestConfiguration {
+    static class TestConfig {
         @Bean
-        public DataSource dataSource() {
+        public TodoService todoService() {
             // ...
         }
     }
+    // ...
 }
 ```
 
-Notice that, in both cases, ApplicationContext is instantiated only once and shared among test methods in the same class.
+Notice that, in both cases, ApplicationContext is instantiated only once and shared among all the test methods in the class.
 
 Using @TestPropertySource to pass in custom properties for testing. Has higher precedence than sources
 
 ```java
-@SpringJUnitConfig(SystemTestConfig.class)
+@SpringJUnitConfig(TestConfig.class)
 @TestPropertySource(properties={"username=foo", "password=bar"},
-    locations="classpath:transfer-test.properties")
-public class TransferServiceTests {
+    locations="classpath:todo-test.properties")
+public class TodoServiceTests {
     // ...
 }
 ```
 
-### Testing with Spring Boot
+## Testing with Spring Boot
 
-Spring Boot introduces new annotations:
+Spring Boot introduces new annotations. Here're popular ones:
 
 - @SpringBootTest
 - @WebMvcTest
 - @DataJpaTest, @DataJdbcTest, @JdbcTest
 - @MockBean
 
-@SpringBootTest
+### Integration test with @SpringBootTest
 
-- Start the whole application context
-- Search for @SpringBootConfiguration (@SpringBootApplication). An alternative to @ContextConfiguration
-- Use @ContextConfiguration for slice testing
-- Auto configured with TestRestTemplate
-- No need to use @ExtendWith as it's a meta annotation of @SpringBootTest
-
-Slicing test:
-
-- Perform isolated testing within a slice of an application. Dependencies need to be mocked
-- @WebMvcTest:
-	- Disable full auto-configuration. Apply only configuration relevant to MVC tests
-	- Auto configured MockMvc
-	- Used in combination with @MockBean
-
-## Writing tests for todo app
-
-### Unit tests for service layer
-
-Use @SpringJUnitConfig when you want to control the beans that will be created in your test.
-
-@SpringJUnitConfig includes 2 meta annotations: @ExtendWith(SpringExtension.class) and @ContextConfiguration
-
-We can configure test class with @SpringJUnitConfig in 2 ways:
-1. Pass in the primary configuration for application-context @SpringJUnitConfig(SystemTestConfig.class. This is equivalent to
-```java
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes={SystemTestConfig.class})
-```
-2. Without passing in configuration class e.g. @SpringJUnitConfig. In this case, Spring will search for a class that is marked with @Configuration and initialize application-context from here.
-
+Unlike @SpringJUnitConfig, @SpringBootTest , by default, starts the whole application context same as when you run your Spring boot application. With this annotation, Spring will search for class with @SpringBootConfiguration and use it as the primary configuration to create ApplicationContext. It also does the auto configuration for TestRestTemplate which we can wire into test class and use to call APIs. Following is an example:
 
 ```java
-@SpringJUnitConfig
-public class TodoServiceTest {
+@SpringBootApplication // includes meta annotation @SpringBootConfiguration
+public class SpringtestingApplication {
+    // ...
+}
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class TodoControllerTest {
     @Autowired
-    private TodoService todoService;
-
-    @MockBean
-    private TodoRepository todoRepository;
-
-    @Configuration
-    static class Config {
-        @Bean
-        public TodoService todoService() {
-            return new TodoServiceImpl();
-        }
-    }
+    TestRestTemplate restTemplate;
     // ...
 }
 ```
 
-Test method:
+### Unit test for controller layer with @WebMvcTest
 
-```java
-@SpringJUnitConfig
-public class TodoServiceTest {
-    // ...
-    @Test
-    public void findAll_returnsCorrectResult() {
-        // arrange
-        var todo = new Todo();
-        todo.setId(23123);
-        todo.setName("AB 123");
-
-        when(todoRepository.findAll()).thenReturn(Arrays.asList(todo));
-
-        // act
-        var result = todoService.findAll();
-
-        // assert
-        var found = result.stream().filter(td -> td.getId() == 23123 && "AB 123".equals(td.getName())).count() > 0;
-        assertThat(found).isTrue();
-    }
-}
-```
-
-### Unit-test for controller layer
-
-Using @WebMvcTest when you want to test controller layer only.
-
-When seeing this annotation, disable full auto-configuration (e.g. auto scan beans) and Spring will auto-configure MockMvc.
+Tests with @WebMvcTest will apply only configuration relevant to MVC tests. The full-configuration will be disable. Spring test framework also auto configures MockMvc which we can inject into test class and use it to call tested APIs.
 
 ```java
 @WebMvcTest(TodoController.class)
@@ -224,65 +168,7 @@ public class TodoControllerTest {
 }
 ```
 
-Test method:
-
-```java
-@WebMvcTest(TodoController.class)
-public class TodoControllerTest {
-    // ...
-    @Test
-    public void getAllTodos_returnsCorrectList() throws Exception {
-        // arrange
-        var todo = new Todo();
-        todo.setId(123123);
-        todo.setName("hello 23143");
-
-        when(todoService.findAll()).thenReturn(Arrays.asList(todo));
-
-        // act
-        mockMvc.perform(get("/api/todos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id", is(123123)))
-                .andExpect(jsonPath("$[0].name", is("hello 23143")));
-    }
-}
-```
-
-### Integration test
-
-This test class uses @SpringBootTest to start the whole application-context and exposes APIs at an available and random port.
-
-H2 in-memory DB also starts with initial data defined in schema.sql and data.sql.
-
-This is called integration test because we are testing multiple layers (e.g controller, service and repository) at the same time.
-
-```java
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TodoControllerTest {
-    @Autowired
-    TestRestTemplate restTemplate;
-    
-        @Test
-    void getAllTodos_returnsCorrectResult() {
-        // arrange
-        var request = new CreateTodoDto();
-        request.setName("todo 123424");
-        var createResponse = restTemplate.exchange("/api/todos", HttpMethod.POST, new HttpEntity<>(request), TodoDto.class);
-        var newTodo = createResponse.getBody();
-
-        // act
-        var responseType = new ParameterizedTypeReference<List<TodoDto>>(){};
-        var response = restTemplate.exchange("/api/todos", HttpMethod.GET, new HttpEntity<>(null), responseType);
-
-        // assert
-        var found = response.getBody().stream()
-                .filter(td -> td.getId() == newTodo.getId() && "todo 123424".equals(td.getName()))
-                .count();
-        assertThat(found).isEqualTo(1);
-    }
-}
-```
-
 [1]: https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/SpringBootApplication.html
 [2]: https://dzone.com/articles/understanding-the-basics-of-spring-vs-spring-boot
 [3]: https://www.baeldung.com/spring-vs-spring-boot
+[4]: https://stackoverflow.com/questions/56289179/how-to-use-mockbean-with-junit-5-in-spring-boot
