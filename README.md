@@ -2,15 +2,15 @@
 
 ## 1. Introduction
 
-There's heavily use of annotations in Spring Framework. This makes confusing about what annotations should be used especially in tests. It sometimes ends up with adding redundant annotations or the tests not work as expected. On stackoverflow, you can easily find the developers make [mistakes][4] with Spring annotations or someone who makes things work but not fully understand why.
+There's heavy use of annotations in Spring Framework. This makes confusing about what annotations should be used especially in tests. It sometimes ends up with adding redundant annotations or the tests not work as expected. On StackOverflow, you can easily find the developers make [mistakes][4] with Spring annotations or someone who makes things work but does not fully understand why.
 
-To make thing clear, in this article, I would summarize the annotations we should use in each testing senario using JUnit 5 and Spring Test Framework
+To make thing clear, in this article, I would summarize the annotations we should use in each testing scenario using JUnit 5 and Spring Test Framework
 
 ## 2. Spring Framework and Spring Boot
 
-Before we look into Spring test, we need to know how Spring works and the relationship between Spring Framework and Spring Boot.
+Before looking into Spring test, we need to know how Spring works and the Spring Framework and Spring Boot relationship.
 
-Spring is the most popular application framework of Java. It simplifies the Java EE development by providing dependency injection feature and supports of many popular technologies such as Spring JDBC, Spring MVC, Spring Test.
+Spring is the most popular application framework of Java. It simplifies the Java EE development by providing dependency injection feature and supports many popular technologies such as Spring JDBC, Spring MVC, Spring Test.
 
 To start a Spring application, you need to create an ApplicationContext which is an IoC container of all bean objects using in the application. Here is an example:
 
@@ -41,9 +41,9 @@ public class MainApplication {
 }
 ```
 
-From the example above you can foresee that we need to do many manual steps to get a Spring application up and running, especially the enterprise application with many external dependencies such as DB, message queue, third-party APIs.
+From the example, above you can foresee that we need to do many manual steps to get a Spring application up and running, especially the enterprise application with many external dependencies such as DB, message queue, third-party APIs.
 
-Spring Boot makes things easier by doing all auto configrations for us. Here is the code for the same example in Spring Boot:
+Spring Boot makes things easier by doing all auto configurations for us. Here is the code for the same example in Spring Boot:
 
 ```java
 @SpringBootApplication
@@ -61,11 +61,11 @@ public class MainApplication {
 }
 ```
 
-Looking into [SpringBootApplication][1] annotation you can see that there is a meta annotation @SpringBootConfiguration which again includes @Configuration. That explains why Spring can still find the primary configuration class and load HelloService bean with `@SpringBootApplication`. 
+Looking into [SpringBootApplication][1] annotation you can see that there is a meta-annotation @SpringBootConfiguration which again includes @Configuration. That explains why Spring can still find the primary configuration class and load HelloService bean with `@SpringBootApplication`. 
 
-Spring tends to group multiple annotations into one to make things simpler. This grouping generates many new annotations which sometimes makes developers confusing and adding redandunt annotations (e.g. adding both @SpringBootApplication and @Configuration to the same class)
+Spring tends to group multiple annotations into one to make things simpler. This grouping generates many new annotations which sometimes makes developers confusing and adding redundant annotations (e.g. adding both @SpringBootApplication and @Configuration to the same class)
 
-Visit following links in case you want to learn more about Spring Framework and Spring Boot:
+Visit the following links in case you want to learn more about Spring Framework and Spring Boot:
 - [Understanding the Basics of Spring vs. Spring Boot][2]
 - [A Comparison Between Spring and Spring Boot][3]
 
@@ -85,9 +85,9 @@ public class TodoServiceTest {
 }
 ```
 
-With this code, a Spring ApplicationContext will be created using TestConfig as the primary configuration. It then gets TodoService instance from the container and inject into the test class. This matches with what we discussed so far: Spring application needs to create ApplicationContext using 1 primary configuration.
+With this code, a Spring ApplicationContext will be created using TestConfig as the primary configuration. It then gets TodoService instance from the container and injects it into the test class. This matches with what we discussed so far: Spring application needs to create ApplicationContext using 1 primary configuration.
 
-There's a short form for the setup above which if you look inside the @SpringJUnitConfig you can see it includes 2 meta annotations: @ExtendWith and @ContextConfiguration
+There's a short form for the setup above which if you look inside the @SpringJUnitConfig you can see 2 meta-annotations: @ExtendWith and @ContextConfiguration
 
 ```java
 @SpringJUnitConfig(TestConfig.class)
@@ -96,7 +96,7 @@ public class TodoServiceTest {
 }
 ```
 
-If the configuration class is not spepcified, Spring will look for configuration embedded in test class
+If the configuration class is not specified, Spring will look for configuration embedded in the test class
 
 ```java
 @SpringJUnitConfig
@@ -129,7 +129,7 @@ Click [here][5] to view full code.
 
 ## 4. Testing with Spring Boot
 
-Spring Boot introduces new annotations. Followings are some popular ones:
+Spring Boot introduces new annotations. The followings are some popular ones:
 
 - @SpringBootTest
 - @WebMvcTest
@@ -138,7 +138,7 @@ Spring Boot introduces new annotations. Followings are some popular ones:
 
 ### 4.1 Integration test with @SpringBootTest
 
-Unlike @SpringJUnitConfig, @SpringBootTest , by default, starts the whole application context same as when you run your Spring Boot application. With this annotation, Spring will search for class with @SpringBootConfiguration and use it as the primary configuration to create ApplicationContext. It also does the auto configuration for TestRestTemplate which we can wire into test class and use to call APIs. Following is an example:
+Unlike @SpringJUnitConfig, @SpringBootTest, by default, starts the whole application context the same as when you run your Spring Boot application. With this annotation, Spring will search for a class with @SpringBootConfiguration and use it as the primary configuration to create ApplicationContext. It also does the auto-configuration for TestRestTemplate which we can wire into the test class and use to call APIs. Following is an example:
 
 ```java
 @SpringBootApplication // includes meta annotation @SpringBootConfiguration
@@ -158,7 +158,7 @@ Click [here][6] to view full code.
 
 ### 4.2 Unit test for controller layer with @WebMvcTest
 
-Tests with @WebMvcTest will apply only configuration relevant to MVC tests. The full-configuration will be disable. Spring Test Framework also auto configures MockMvc which we can inject into test class and use it to call tested APIs.
+Tests with @WebMvcTest will apply only configuration relevant to MVC tests. The full configuration will be disabled. Spring Test Framework also auto-configures MockMvc which we can inject into the test class and use to call tested APIs.
 
 ```java
 @WebMvcTest(TodoController.class)
