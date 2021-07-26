@@ -2,13 +2,13 @@
 
 ## 1. Introduction
 
-There's heavily use of annotations in Spring framework. This makes us confusing about what annotations should be used especially in tests. It sometimes ends up with adding not needed annotations or making the tests not work as expected but we don't really understand why. You can easily find the developers make mistakes with Spring annotations like [this][4] or someone who makes things work but don't fully understand why.
+There's heavily use of annotations in Spring Framework. This makes confusing about what annotations should be used especially in tests. It sometimes ends up with adding redundant annotations or the tests not work as expected. On stackoverflow, you can easily find the developers make [mistakes][4] with Spring annotations or someone who makes things work but not fully understand why.
 
 To make thing clear, in this article, I would summarize the annotations we should use in each testing senario using JUnit 5 and Spring Test Framework
 
-## 2. Spring framework and Spring Boot
+## 2. Spring Framework and Spring Boot
 
-Before we look into Spring test, we need to know how Spring works and the relationship between Spring framework and Spring Boot.
+Before we look into Spring test, we need to know how Spring works and the relationship between Spring Framework and Spring Boot.
 
 Spring is the most popular application framework of Java. It simplifies the Java EE development by providing dependency injection feature and supports of many popular technologies such as Spring JDBC, Spring MVC, Spring Test.
 
