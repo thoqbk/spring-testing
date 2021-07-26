@@ -4,7 +4,7 @@
 
 There's heavily use of annotations in Spring framework. This makes us confusing about what annotations should be used especially in tests. It sometimes ends up with adding not needed annotations or making the tests not work as expected but we don't really understand why. You can easily find the developers make mistakes with Spring annotations like [this][4] or someone who makes things work but don't fully understand why.
 
-To make thing clear, in this article, I would summarize the annotations we should use in each testing senario.
+To make thing clear, in this article, I would summarize the annotations we should use in each testing senario using JUnit 5 and Spring Test Framework
 
 ## 2. Spring framework and Spring Boot
 
@@ -158,7 +158,7 @@ Click [here][6] to view full code.
 
 ### 4.2 Unit test for controller layer with @WebMvcTest
 
-Tests with @WebMvcTest will apply only configuration relevant to MVC tests. The full-configuration will be disable. Spring test framework also auto configures MockMvc which we can inject into test class and use it to call tested APIs.
+Tests with @WebMvcTest will apply only configuration relevant to MVC tests. The full-configuration will be disable. Spring Test Framework also auto configures MockMvc which we can inject into test class and use it to call tested APIs.
 
 ```java
 @WebMvcTest(TodoController.class)
