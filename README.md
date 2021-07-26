@@ -1,10 +1,12 @@
 # Using correct annotations in Spring testing
 
+Original article on [Dzone][8]
+
 ## 1. Introduction
 
 There's heavy use of annotations in Spring Framework. This makes confusing about what annotations should be used especially in tests. It sometimes ends up with adding redundant annotations or the tests not work as expected. On StackOverflow, you can easily find the developers make [mistakes][4] with Spring annotations or someone who makes things work but does not fully understand why.
 
-To make thing clear, in this article, I would summarize the annotations we should use in each testing scenario using JUnit 5 and Spring Test Framework
+To make things clear, in this article, I would summarize the annotations we should use in each testing scenario using JUnit 5 and Spring Test Framework.
 
 ## 2. Spring Framework and Spring Boot
 
@@ -181,10 +183,11 @@ To summarize:
 - Use @WebMvcTest with MockMvc to write unit-test for controller layer
 - Use @SpringBootTest with TestRestTemplate to write integration-test for Spring Boot application.
 
-[1]: https://docs.spring.io/spring-Boot/docs/current/api/org/springframework/Boot/autoconfigure/SpringBootApplication.html
+[1]: https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/SpringBootApplication.html
 [2]: https://dzone.com/articles/understanding-the-basics-of-spring-vs-spring-Boot
 [3]: https://www.baeldung.com/spring-vs-spring-Boot
 [4]: https://stackoverflow.com/questions/56289179/how-to-use-mockbean-with-junit-5-in-spring-Boot
 [5]: src/test/java/thoqbk/springtesting/unit/TodoServiceTest.java
 [6]: src/test/java/thoqbk/springtesting/integration/TodoControllerTest.java
 [7]: src/test/java/thoqbk/springtesting/unit/TodoControllerTest.java
+[8]: https://dzone.com/articles/using-correct-annotations-in-spring-testing
