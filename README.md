@@ -1,4 +1,4 @@
-# Using correct annotations in Spring testing
+# Using appropriate annotations in Spring testing
 
 Original article on [Dzone][8]
 
